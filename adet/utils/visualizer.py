@@ -7,15 +7,15 @@ import matplotlib.font_manager as mfm
 class TextVisualizer(Visualizer):
     def __init__(self, image, metadata, instance_mode, cfg):
         Visualizer.__init__(self, image, metadata, instance_mode=instance_mode)
-        self.voc_size = cfg.MODEL.BATEXT.VOC_SIZE
-        self.use_customer_dictionary = cfg.MODEL.BATEXT.CUSTOM_DICT
+        # self.voc_size = cfg.MODEL.BATEXT.VOC_SIZE
+        # self.use_customer_dictionary = cfg.MODEL.BATEXT.CUSTOM_DICT
         self.use_polygon = cfg.MODEL.TRANSFORMER.USE_POLYGON
-        if not self.use_customer_dictionary:
-            self.CTLABELS = [' ','!','"','#','$','%','&','\'','(',')','*','+',',','-','.','/','0','1','2','3','4','5','6','7','8','9',':',';','<','=','>','?','@','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','[','\\',']','^','_','`','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','{','|','}','~']
-        else:
-            with open(self.use_customer_dictionary, 'rb') as fp:
-                self.CTLABELS = pickle.load(fp)
-        assert(int(self.voc_size - 1) == len(self.CTLABELS)), "voc_size is not matched dictionary size, got {} and {}.".format(int(self.voc_size - 1), len(self.CTLABELS))
+        # if not self.use_customer_dictionary:
+        #     self.CTLABELS = [' ','!','"','#','$','%','&','\'','(',')','*','+',',','-','.','/','0','1','2','3','4','5','6','7','8','9',':',';','<','=','>','?','@','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','[','\\',']','^','_','`','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','{','|','}','~']
+        # else:
+        #     with open(self.use_customer_dictionary, 'rb') as fp:
+        #         self.CTLABELS = pickle.load(fp)
+        # assert(int(self.voc_size - 1) == len(self.CTLABELS)), "voc_size is not matched dictionary size, got {} and {}.".format(int(self.voc_size - 1), len(self.CTLABELS))
 
     def draw_instance_predictions(self, predictions):
         if self.use_polygon:
@@ -23,9 +23,10 @@ class TextVisualizer(Visualizer):
         else:
             ctrl_pnts = predictions.beziers.numpy()
         scores = predictions.scores.tolist()
-        recs = predictions.recs
+        # recs = predictions.recs
 
-        self.overlay_instances(ctrl_pnts, recs, scores)
+        # self.overlay_instances(ctrl_pnts, recs, scores)
+        self.overlay_instances(ctrl_pnts, scores)
 
         return self.output
 
@@ -77,15 +78,18 @@ class TextVisualizer(Visualizer):
                 last_char = False
         return s
 
-    def overlay_instances(self, ctrl_pnts, recs, scores, alpha=0.5):
+    # def overlay_instances(self, ctrl_pnts, recs, scores, alpha=0.5):
+    def overlay_instances(self, ctrl_pnts, scores, alpha=0.5):
         color = (0.1, 0.2, 0.5)
 
-        for ctrl_pnt, rec, score in zip(ctrl_pnts, recs, scores):
+        # for ctrl_pnt, rec, score in zip(ctrl_pnts, recs, scores):
+        for ctrl_pnt, score in zip(ctrl_pnts, scores):
             polygon = self._ctrl_pnt_to_poly(ctrl_pnt)
             self.draw_polygon(polygon, color, alpha=alpha)
 
             # draw text in the top left corner
-            text = self._decode_recognition(rec)
+            # text = self._decode_recognition(rec)
+            text = "text"
             text = "{:.3f}: {}".format(score, text)
             lighter_color = self._change_color_brightness(color, brightness_factor=0.7)
             text_pos = polygon[0]
@@ -98,7 +102,7 @@ class TextVisualizer(Visualizer):
                 color=lighter_color,
                 horizontal_alignment=horiz_align,
                 font_size=font_size,
-                draw_chinese=False if self.voc_size == 96 else True
+                # draw_chinese=False if self.voc_size == 96 else True
             )
     
 

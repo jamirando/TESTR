@@ -38,6 +38,15 @@ dist/
 .python-version
 
 # project dirs
+/datasets/syntext1
+/datasets/syntext2
+/datasets/evaluation
+/datasets/icdar2015
+/datasets/mlt2017
+/datasets/CTW1500
+/datasets/totaltext
+/output
+/checkpoint
 /datasets/coco
 /datasets/lvis
 /datasets/pic

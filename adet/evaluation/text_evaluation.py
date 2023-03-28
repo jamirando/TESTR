@@ -33,7 +33,8 @@ class TextEvaluator(DatasetEvaluator):
     """
 
     def __init__(self, dataset_name, cfg, distributed, output_dir=None):
-        self._tasks = ("polygon", "recognition")
+        # self._tasks = ("polygon", "recognition")
+        self.tasks = ["polygon"]
         self._distributed = distributed
         self._output_dir = output_dir
 
@@ -112,10 +113,10 @@ class TextEvaluator(DatasetEvaluator):
                         ymax = 0
                         for i in range(len(data[ix]['polys'])):
                             outstr = outstr + str(int(data[ix]['polys'][i][0])) +','+str(int(data[ix]['polys'][i][1])) +','
-                        ass = de_ascii(data[ix]['rec'])
-                        if len(ass)>=0: # 
-                            outstr = outstr + str(round(data[ix]['score'], 3)) +',####'+ass+'\n'	
-                            f2.writelines(outstr)
+                        # ass = de_ascii(data[ix]['rec'])
+                        # if len(ass)>=0: # 
+                        #     outstr = outstr + str(round(data[ix]['score'], 3)) +',####'+ass+'\n'	
+                        #     f2.writelines(outstr)
                 f2.close()
         dirn = temp_dir
         lsc = [cf_th] 
@@ -154,7 +155,7 @@ class TextEvaluator(DatasetEvaluator):
             fout = open(out, 'w')
             for iline, line in enumerate(fin):
                 ptr = line.strip().split(',####')
-                rec  = ptr[1]
+                # rec  = ptr[1]
                 cors = ptr[0].split(',')
                 assert(len(cors) %2 == 0), 'cors invalid.'
                 pts = [(int(cors[j]), int(cors[j+1])) for j in range(0,len(cors),2)]
@@ -176,7 +177,7 @@ class TextEvaluator(DatasetEvaluator):
                 for ipt in pts[:-1]:
                     outstr += (str(int(ipt[0]))+','+ str(int(ipt[1]))+',')
                 outstr += (str(int(pts[-1][0]))+','+ str(int(pts[-1][1])))
-                outstr = outstr+',####' + rec
+                # outstr = outstr+',####' + rec
                 fout.writelines(outstr+'\n')
             fout.close()
         os.chdir(output_file)
@@ -254,22 +255,23 @@ class TextEvaluator(DatasetEvaluator):
             pnts = instances.polygons.numpy()
         else:
             pnts = instances.beziers.numpy()
-        recs = instances.recs.numpy()
-        rec_scores = instances.rec_scores.numpy()
+        # recs = instances.recs.numpy()
+        # rec_scores = instances.rec_scores.numpy()
     
         results = []
-        for pnt, rec, score, rec_score in zip(pnts, recs, scores, rec_scores):
+        # for pnt, rec, score, rec_score in zip(pnts, recs, scores, rec_scores):
+        for pnt, score in zip(pnts, scores):
             # convert beziers to polygons
             poly = self.pnt_to_polygon(pnt)
-            s = self.decode(rec)
-            word = self._lexicon_matcher.find_match_word(s, img_id=str(img_id), scores=rec_score)
-            if word is None:
-                continue
+            # s = self.decode(rec)
+            # word = self._lexicon_matcher.find_match_word(s, img_id=str(img_id), scores=rec_score)
+            # if word is None:
+                # continue
             result = {
                 "image_id": img_id,
                 "category_id": 1,
                 "polys": poly,
-                "rec": word,
+                # "rec": word,
                 "score": score,
             }
             results.append(result)

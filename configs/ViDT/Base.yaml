@@ -1,0 +1,51 @@
+MODEL:
+  META_ARCHITECTURE: "ViDTDetector"
+  PIXEL_MEAN: [123.675, 116.280, 103.530]
+  PIXEL_STD: [58.395, 57.120, 57.375]
+  TRANSFORMER:
+    ENABLED: True
+    # INFERENCE_TH_TEST: 0.45
+    INFERENCE_TH_TEST: 0.
+    PRETRAINED: "/home/jonric/TESTR/checkpoint.pth"
+    NUM_FEATURE_LEVELS: 4
+    DEC_LAYERS: 6
+    DROPOUT: 0.1
+    NHEADS: 8
+    DEC_N_POINTS: 4
+    USE_POLYGON: True
+  WEIGHTS: "/home/jonric/TESTR/output/ViDT/pretrain/SwinNano/model_0229999.pth"
+SOLVER:
+  WEIGHT_DECAY: 1e-4
+  OPTIMIZER: "ADAMW"
+  LR_BACKBONE_NAMES: ['backbone.0']
+  LR_LINEAR_PROJ_NAMES: ['reference_points', 'sampling_offsets']
+  LR_LINEAR_PROJ_MULT: 0.1
+  CLIP_GRADIENTS:
+    ENABLED: True
+    CLIP_TYPE: "full_model"
+    CLIP_VALUE: 0.1
+    NORM_TYPE: 2.0
+  IMS_PER_BATCH: 16
+  BASE_LR: 1e-4
+  LR_BACKBONE: 1e-5
+  WARMUP_ITERS: 0
+  STEPS: (340000,)
+  MAX_ITER: 440000
+  CHECKPOINT_PERIOD: 10000
+TEST:
+  EVAL_PERIOD: 10000
+OUTPUT_DIR: "output/ViDT/pretrain/SwinNano"
+DATASETS:
+  TRAIN: ("mltbezier_word_poly_train", "totaltext_poly_train", "syntext1_poly_train", "syntext2_poly_train",) 
+  TEST: ("totaltext_poly_val",)
+INPUT:
+  HFLIP_TRAIN: False
+  MIN_SIZE_TRAIN: (480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800)
+  MAX_SIZE_TRAIN: 1333
+  # MIN_SIZE_TEST: 1600
+  # MAX_SIZE_TEST: 1824
+  # CROP:
+  #   ENABLED: True
+  #   CROP_INSTANCE: False
+  #   SIZE: [0.1, 0.1]
+  # FORMAT: "RGB"

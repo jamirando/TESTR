@@ -11,6 +11,7 @@ import math
 from rapidfuzz import string_metric
 
 WORD_SPOTTING =True
+# WORD_SPOTTING = False
 def evaluation_imports():
     """
     evaluation_imports: Dictionary ( key = module name , value = alias  )  with python modules used in the evaluation. 

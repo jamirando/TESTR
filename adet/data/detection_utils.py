@@ -63,7 +63,7 @@ def annotations_to_instances(annos, image_size, mask_format="polygon"):
     # add attributes
     if "beziers" in annos[0]:
         beziers = [obj.get("beziers", []) for obj in annos]
-        instance.beziers = torch.as_tensor(beziers, dtype=torch.float32)
+        instance.beziers = torch.as_tensor(np.array(beziers), dtype=torch.float32)
 
     if "rec" in annos[0]:
         text = [obj.get("rec", []) for obj in annos]
@@ -71,7 +71,7 @@ def annotations_to_instances(annos, image_size, mask_format="polygon"):
 
     if "polygons" in annos[0]:
         polys = [obj.get("polygons", []) for obj in annos]
-        instance.polygons = torch.as_tensor(polys, dtype=torch.float32)
+        instance.polygons = torch.as_tensor(np.array(polys), dtype=torch.float32)
 
     return instance
 
