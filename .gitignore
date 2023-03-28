@@ -38,6 +38,7 @@ dist/
 .python-version
 
 # project dirs
+/AdelaiDet/
 /datasets/syntext1
 /datasets/syntext2
 /datasets/evaluation

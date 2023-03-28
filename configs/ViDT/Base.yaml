@@ -6,14 +6,14 @@ MODEL:
     ENABLED: True
     # INFERENCE_TH_TEST: 0.45
     INFERENCE_TH_TEST: 0.
-    PRETRAINED: "/home/jonric/TESTR/checkpoint.pth"
+    PRETRAINED: "/home/jonric/TESTRi/checkpoints/checkpoint.pth"
     NUM_FEATURE_LEVELS: 4
     DEC_LAYERS: 6
     DROPOUT: 0.1
     NHEADS: 8
     DEC_N_POINTS: 4
     USE_POLYGON: True
-  WEIGHTS: "/home/jonric/TESTR/output/ViDT/pretrain/SwinNano/model_0229999.pth"
+    #WEIGHTS: "/home/jonric/TESTR/output/ViDT/pretrain/SwinNano/model_0229999.pth"
 SOLVER:
   WEIGHT_DECAY: 1e-4
   OPTIMIZER: "ADAMW"
@@ -48,4 +48,4 @@ INPUT:
   #   ENABLED: True
   #   CROP_INSTANCE: False
   #   SIZE: [0.1, 0.1]
-  # FORMAT: "RGB"
+  FORMAT: "RGB"
