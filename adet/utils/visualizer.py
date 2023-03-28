@@ -85,7 +85,8 @@ class TextVisualizer(Visualizer):
         # for ctrl_pnt, rec, score in zip(ctrl_pnts, recs, scores):
         for ctrl_pnt, score in zip(ctrl_pnts, scores):
             polygon = self._ctrl_pnt_to_poly(ctrl_pnt)
-            self.draw_polygon(polygon, color, alpha=alpha)
+            self.draw_box(ctrl_pnt, alpha)
+            #self.draw_polygon(polygon, color, alpha=alpha)
 
             # draw text in the top left corner
             # text = self._decode_recognition(rec)

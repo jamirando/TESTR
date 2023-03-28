@@ -444,26 +444,37 @@ class ViDTDetector(nn.Module):
         assert len(ctrl_point_cls) == len(image_sizes)
         results = []
 
-        text_pred = torch.softmax(text_pred, dim=-1)
-        prob = ctrl_point_cls.mean(-2).sigmoid()
-        scores, labels = prob.max(-1)
+        # text_pred = torch.softmax(text_pred, dim=-1)
+        # prob = ctrl_point_cls.mean(-2).sigmoid()
+        # print('prob',prob)
+        # scores, labels = prob.max(-1)
+        # print('scores',scores)
+        # print('labels',labels)
 
-        #prob = ctrl_point_cls.sigmoid()
-        #topk_values, topk_indexes = torch.topk(prob.view(ctrl_point_cls.shape[0], -1), 100, dim=1)
-        #scores = topk_values
-        #topk_boxes = topk_indexes // ctrl_point_cls.shape[2]
-        #labels = topk_indexes % ctrl_point_cls.shape[2]
-        #boxes = box_ops.box_cxcywh_to_xyxy(ctrl_point_coord)
-        #boxes = torch.gather(boxes, 1, topk_boxes.unsqueeze(-1).repeat(1,1,4))
+        prob = ctrl_point_cls.sigmoid()
+        #print('prob',prob)
+        topk_values, topk_indexes = torch.topk(prob.view(ctrl_point_cls.shape[0], -1), 100, dim=1)
+        #print('topk_values', topk_values)
+        #print('topk_indexes', topk_indexes)
+        scores = topk_values
+        topk_boxes = torch.div(topk_indexes, ctrl_point_cls.shape[2],rounding_mode='floor')
+        #print('topk_boxes', topk_boxes)
+        labels = topk_indexes % ctrl_point_cls.shape[2]
+        boxes = box_ops.box_cxcywh_to_xyxy(ctrl_point_coord)
+        #print('boxes1', boxes)
+        boxes = torch.gather(boxes, 1, topk_boxes.unsqueeze(-1).repeat(1,1,4))
+        #print('boxes2', boxes)
         
-        for scores_per_image, labels_per_image, ctrl_point_per_image, image_size in zip(
-            scores, labels, ctrl_point_coord, image_sizes
-        ):
         #for scores_per_image, labels_per_image, ctrl_point_per_image, image_size in zip(
-        #    scores, labels, boxes, image_sizes
+        #    scores, labels, ctrl_point_coord, image_sizes
         #):
+        for scores_per_image, labels_per_image, ctrl_point_per_image, image_size in zip(
+            scores, labels, boxes, image_sizes
+        ):
             selector = scores_per_image >= self.test_score_threshold
+            #print(selector)
             scores_per_image = scores_per_image[selector]
+            #print(scores_per_image)
             labels_per_image = labels_per_image[selector]
             ctrl_point_per_image = ctrl_point_per_image[selector]
             # text_per_image = text_per_image[selector]
@@ -471,22 +482,22 @@ class ViDTDetector(nn.Module):
             result.scores = scores_per_image
             result.pred_classes = labels_per_image
             # result.rec_scores = text_per_image
+            #print('before', ctrl_point_per_image)
             ctrl_point_per_image[..., 0] *= image_size[1]
+            ctrl_point_per_image[..., 2] *= image_size[1]
+            #print(image_size[1])
+            #print('after1',ctrl_point_per_image)
             ctrl_point_per_image[..., 1] *= image_size[0]
+            ctrl_point_per_image[..., 3] *= image_size[0]
+            #print(image_size[0])
+            #print('after0',ctrl_point_per_image)
             if self.use_polygon:
                 result.polygons = ctrl_point_per_image.flatten(1)
             else:
                 result.beziers = ctrl_point_per_image.flatten(1)
             # _, topi = text_per_image.topk(1)
             # result.recs = topi.squeeze(-1)
-            
+            # print(result.polygons.shape)
             results.append(result)
-        print(results)
+        #print(results)
         return results
-        #img_h, img_w = torch.as_tensor(image_sizes, dtype=torch.float, device=self.device).unbind(1)
-        #scale_fct = torch.stack([img_w, img_h, img_w, img_h], dim=1).to(torch.float32)
-        #boxes = boxes * scale_fct[:, None, :]
-
-        #results = [{'scores': s, 'labels': l, 'boxes':b} for s, l, b in zip(scores, labels, boxes)]
-
-        #return results

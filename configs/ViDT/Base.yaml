@@ -6,7 +6,7 @@ MODEL:
     ENABLED: True
     # INFERENCE_TH_TEST: 0.45
     INFERENCE_TH_TEST: 0.
-    PRETRAINED: "/home/jonric/TESTRi/checkpoints/checkpoint.pth"
+    PRETRAINED: "/home/jonric/TESTR/checkpoints/checkpoint.pth"
     NUM_FEATURE_LEVELS: 4
     DEC_LAYERS: 6
     DROPOUT: 0.1
