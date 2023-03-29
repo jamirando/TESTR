@@ -66,8 +66,9 @@ class TextEvaluator(DatasetEvaluator):
 
         # use dataset_name to decide eval_gt_path
         if "totaltext" in dataset_name:
-            self._text_eval_gt_path = "datasets/evaluation/gt_totaltext.zip"
-            self._word_spotting = True
+            self._text_eval_gt_path = ""
+            # self._text_eval_gt_path = "datasets/evaluation/gt_totaltext.zip"
+            # self._word_spotting = True
         elif "ctw1500" in dataset_name:
             self._text_eval_gt_path = "datasets/evaluation/gt_ctw1500.zip"
             self._word_spotting = False
