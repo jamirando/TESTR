@@ -26,15 +26,15 @@ SOLVER:
     CLIP_TYPE: "full_model"
     CLIP_VALUE: 0.1
     NORM_TYPE: 2.0
-  IMS_PER_BATCH: 16
+  IMS_PER_BATCH: 8 
   BASE_LR: 1e-4
   LR_BACKBONE: 1e-5
   WARMUP_ITERS: 0
   STEPS: (340000,)
   MAX_ITER: 440000
-  CHECKPOINT_PERIOD: 10000
+  CHECKPOINT_PERIOD: 20000
 TEST:
-  EVAL_PERIOD: 10000
+  EVAL_PERIOD: 20000
 OUTPUT_DIR: "output/ViDT/pretrain/SwinNano"
 DATASETS:
   TRAIN: ("mltbezier_word_poly_train", "totaltext_poly_train", "syntext1_poly_train", "syntext2_poly_train",) 
