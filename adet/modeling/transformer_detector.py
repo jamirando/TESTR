@@ -428,7 +428,7 @@ class ViDTDetector(nn.Module):
     def prepare_targets(self, targets):
         new_targets = []
         for targets_per_image in targets:
-            print(targets_per_image)
+            # print(targets_per_image)
             h, w = targets_per_image.image_size
             # print('h: {}, w: {}'.format(h,w))
             image_size_xyxy = torch.as_tensor([w, h, w, h], dtype=torch.float, device=self.device)
