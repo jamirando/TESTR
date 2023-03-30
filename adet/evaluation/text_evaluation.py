@@ -18,7 +18,8 @@ from detectron2.evaluation.evaluator import DatasetEvaluator
 
 import glob
 import shutil
-from shapely.geometry import Polygon, LinearRing
+from shapely.geometry import  Polygon, LinearRing
+from shapely import box
 from adet.evaluation import text_eval_script
 import zipfile
 import pickle
@@ -66,9 +67,10 @@ class TextEvaluator(DatasetEvaluator):
 
         # use dataset_name to decide eval_gt_path
         if "totaltext" in dataset_name:
-            self._text_eval_gt_path = ""
+            # self._text_eval_gt_path = ""
             # self._text_eval_gt_path = "datasets/evaluation/gt_totaltext.zip"
-            # self._word_spotting = True
+            self._text_eval_gt_path = "datasets/evaluation/gt_bbox_totaltext.zip"
+            self._word_spotting = True
         elif "ctw1500" in dataset_name:
             self._text_eval_gt_path = "datasets/evaluation/gt_ctw1500.zip"
             self._word_spotting = False
@@ -88,9 +90,11 @@ class TextEvaluator(DatasetEvaluator):
 
             instances = output["instances"].to(self._cpu_device)
             prediction["instances"] = self.instances_to_coco_json(instances, input["image_id"])
+            #print('prediction',prediction)
             self._predictions.append(prediction)
 
     def to_eval_format(self, file_path, temp_dir="temp_det_results", cf_th=0.5):
+        print('to_eval_format')
         def fis_ascii(s):
             a = (ord(c) < 128 for c in s)
             return all(a)
@@ -112,16 +116,20 @@ class TextEvaluator(DatasetEvaluator):
                         ymin = 1000000
                         xmax = 0 
                         ymax = 0
-                        for i in range(len(data[ix]['polys'])):
-                            outstr = outstr + str(int(data[ix]['polys'][i][0])) +','+str(int(data[ix]['polys'][i][1])) +','
+                        outstr = outstr + str(int(data[ix]['polys'][0])) +','+str(int(data[ix]['polys'][1])) +','+str(int(data[ix]['polys'][2])) +','+str(int(data[ix]['polys'][3])) +','+ str(round(data[ix]['score'], 3)) +'\n'
+                        # for i in range(len(data[ix]['polys'])):
+                        #     outstr = outstr + str(int(data[ix]['polys'][i][0])) +','+str(int(data[ix]['polys'][i][1])) +','
                         # ass = de_ascii(data[ix]['rec'])
                         # if len(ass)>=0: # 
                         #     outstr = outstr + str(round(data[ix]['score'], 3)) +',####'+ass+'\n'	
                         #     f2.writelines(outstr)
+                        f2.writelines(outstr)
                 f2.close()
         dirn = temp_dir
+        cf_th = 0.45
         lsc = [cf_th] 
         fres = open('temp_all_det_cors.txt', 'r').readlines()
+        
         for isc in lsc:	
             if not os.path.isdir(dirn):
                 os.mkdir(dirn)
@@ -132,15 +140,19 @@ class TextEvaluator(DatasetEvaluator):
                 filename = '{:07d}.txt'.format(int(s[0]))
                 outName = os.path.join(dirn, filename)
                 with open(outName, 'a') as fout:
-                    ptr = s[1].strip().split(',####')
-                    score = ptr[0].split(',')[-1]
+                    ptr = s[1].strip()#.split(',####')
+                    # score = ptr[0].split(',')[-1]
+                    score = ptr.split(',')[-1]
                     if float(score) < isc:
                         continue
-                    cors = ','.join(e for e in ptr[0].split(',')[:-1])
-                    fout.writelines(cors+',####'+ptr[1]+'\n')
+                    # cors = ','.join(e for e in ptr[0].split(',')[:-1])
+                    cors = ','.join(e for e in ptr.split(',')[:-1])
+                    # fout.writelines(cors+',####'+ptr[1]+'\n')
+                    fout.writelines(cors+'\n')
         os.remove("temp_all_det_cors.txt")
 
     def sort_detection(self, temp_dir):
+        print('sort_detection')
         origin_file = temp_dir
         output_file = "final_"+temp_dir
 
@@ -155,13 +167,16 @@ class TextEvaluator(DatasetEvaluator):
             fin = open(i, 'r').readlines()
             fout = open(out, 'w')
             for iline, line in enumerate(fin):
-                ptr = line.strip().split(',####')
+                ptr = line.strip()#.split(',####')
                 # rec  = ptr[1]
-                cors = ptr[0].split(',')
+                # cors = ptr[0].split(',')
+                cors = ptr.split(',')
                 assert(len(cors) %2 == 0), 'cors invalid.'
-                pts = [(int(cors[j]), int(cors[j+1])) for j in range(0,len(cors),2)]
+                # pts = [(int(cors[j]), int(cors[j+1])) for j in range(0,len(cors),2)]
+                pts = [int(cors[j]) for j in range(len(cors))]
                 try:
-                    pgt = Polygon(pts)
+                    # pgt = Polygon(pts)
+                    pgt = box(pts[0],pts[1],pts[2],pts[3],ccw=False)
                 except Exception as e:
                     print(e)
                     print('An invalid detection in {} line {} is removed ... '.format(i, iline))
@@ -171,14 +186,18 @@ class TextEvaluator(DatasetEvaluator):
                     print('An invalid detection in {} line {} is removed ... '.format(i, iline))
                     continue
                     
-                pRing = LinearRing(pts)
-                if pRing.is_ccw:
-                    pts.reverse()
+                # pRing = LinearRing(pts)
+                # if pRing.is_ccw:
+                #     pts.reverse()
                 outstr = ''
-                for ipt in pts[:-1]:
-                    outstr += (str(int(ipt[0]))+','+ str(int(ipt[1]))+',')
-                outstr += (str(int(pts[-1][0]))+','+ str(int(pts[-1][1])))
+                for ipt in range(len(pts)-1):
+                    outstr += (str(int(pts[ipt]))+',')
+                outstr += (str(int(pts[-1])))
+                # for ipt in pts[:-1]:
+                #     outstr += (str(int(ipt[0]))+','+ str(int(ipt[1]))+',')
+                # outstr += (str(int(pts[-1][0]))+','+ str(int(pts[-1][1])))
                 # outstr = outstr+',####' + rec
+                
                 fout.writelines(outstr+'\n')
             fout.close()
         os.chdir(output_file)
@@ -199,9 +218,11 @@ class TextEvaluator(DatasetEvaluator):
         return "det.zip"
     
     def evaluate_with_official_code(self, result_path, gt_path):
+        print('meow')
         return text_eval_script.text_eval_main(det_file=result_path, gt_file=gt_path, is_word_spotting=self._word_spotting)
 
     def evaluate(self):
+        print('evaluate')
         if self._distributed:
             comm.synchronize()
             predictions = comm.gather(self._predictions, dst=0)
@@ -264,6 +285,7 @@ class TextEvaluator(DatasetEvaluator):
         for pnt, score in zip(pnts, scores):
             # convert beziers to polygons
             poly = self.pnt_to_polygon(pnt)
+            # print('poly:',poly)
             # s = self.decode(rec)
             # word = self._lexicon_matcher.find_match_word(s, img_id=str(img_id), scores=rec_score)
             # if word is None:
@@ -281,7 +303,8 @@ class TextEvaluator(DatasetEvaluator):
 
     def pnt_to_polygon(self, ctrl_pnt):
         if self.use_polygon:
-            return ctrl_pnt.reshape(-1, 2).tolist()
+            # return ctrl_pnt.reshape(-1, 2).tolist()
+            return ctrl_pnt.tolist()
         else:
             u = np.linspace(0, 1, 20)
             ctrl_pnt = ctrl_pnt.reshape(2, 4, 2).transpose(0, 2, 1).reshape(4, 4)

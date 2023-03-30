@@ -296,11 +296,15 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
                 gtRect = Rectangle(*points)
                 gtPol = rectangle_to_polygon(gtRect)
             else:
-                gtPol = polygon_from_points(points)
+                gtRect = Rectangle(*points)
+                # print(gtRect)
+                gtPol = rectangle_to_polygon(gtRect)
+                # print(gtPol)
+                # gtPol = polygon_from_points(points)
             gtPols.append(gtPol)
             gtPolPoints.append(points)
 
-            #On word spotting we will filter some transcriptions with special characters
+            # On word spotting we will filter some transcriptions with special characters
             if evaluationParams['WORD_SPOTTING'] :
                 if dontCare == False : 
                     if include_in_dictionary(transcription) == False : 
@@ -328,8 +332,10 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
                 if evaluationParams['LTRB']:
                     detRect = Rectangle(*points)
                     detPol = rectangle_to_polygon(detRect)
-                else:                    
-                    detPol = polygon_from_points(points)
+                else:
+                    detRect = Rectangle(*points)      
+                    detPol = rectangle_to_polygon(detRect)              
+                    # detPol = polygon_from_points(points)
                 detPols.append(detPol)
                 detPolPoints.append(points)
                 detTrans.append(transcription)

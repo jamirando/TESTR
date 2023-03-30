@@ -11,6 +11,7 @@ import importlib
 from io import StringIO
 
 from shapely.geometry import *
+from shapely import box
 
 def print_help():
     sys.stdout.write('Usage: python %s.py -g=<gtFile> -s=<submFile> [-o=<outputFolder> -p=<jsonParams>]' %sys.argv[0])
@@ -197,9 +198,10 @@ def get_tl_line_values_gt(line,LTRB=True,withTranscription=False,withConfidence=
         elif withConfidence:
             raise('not implemented')
         elif withTranscription:
-            ptr = line.strip().split(',####')
-            cors = ptr[0].split(',')
-            recs = ptr[1].strip()
+            ptr = line.strip()#.split(',####')
+            cors = ptr.split(',')      
+            # cors = ptr[0].split(',')
+            # recs = ptr[1].strip()
             assert(len(cors)%2 == 0), 'num cors should be even.'
             try:
                 points = [ float(ic) for ic in cors[:]]
@@ -221,13 +223,13 @@ def get_tl_line_values_gt(line,LTRB=True,withTranscription=False,withConfidence=
         except ValueError:
             raise Exception("Confidence value must be a float")       
             
-    if withTranscription:
+    # if withTranscription:
         # posTranscription = numPoints + (2 if withConfidence else 1)
         # transcription = cors[-1].strip()
-        transcription = recs
-        m2 = re.match(r'^\s*\"(.*)\"\s*$',transcription)
-        if m2 != None : #Transcription with double quotes, we extract the value and replace escaped characters
-            transcription = m2.group(1).replace("\\\\", "\\").replace("\\\"", "\"")
+        # transcription = recs
+        # m2 = re.match(r'^\s*\"(.*)\"\s*$',transcription)
+        # if m2 != None : #Transcription with double quotes, we extract the value and replace escaped characters
+        #     transcription = m2.group(1).replace("\\\\", "\\").replace("\\\"", "\"")
     
     return points,confidence,transcription
 
@@ -254,9 +256,10 @@ def get_tl_line_values(line,LTRB=True,withTranscription=False,withConfidence=Fal
         elif withConfidence:
             raise('not implemented')
         elif withTranscription:
-            ptr = line.strip().split(',####')
-            cors = ptr[0].split(',')
-            recs = ptr[1].strip()
+            ptr = line.strip()#.split(',####')
+            cors = ptr.split(',')
+            # cors = ptr[0].split(',')
+            # recs = ptr[1].strip()
             assert(len(cors)%2 == 0), 'num cors should be even.'
             try:
                 points = [ float(ic) for ic in cors[:]]
@@ -279,12 +282,12 @@ def get_tl_line_values(line,LTRB=True,withTranscription=False,withConfidence=Fal
         except ValueError:
             raise Exception("Confidence value must be a float")       
             
-    if withTranscription:
-        # posTranscription = numPoints + (2 if withConfidence else 1)
-        transcription = recs
-        m2 = re.match(r'^\s*\"(.*)\"\s*$',transcription)
-        if m2 != None : #Transcription with double quotes, we extract the value and replace escaped characters
-            transcription = m2.group(1).replace("\\\\", "\\").replace("\\\"", "\"")
+    # if withTranscription:
+    #     # posTranscription = numPoints + (2 if withConfidence else 1)
+    #     transcription = recs
+    #     m2 = re.match(r'^\s*\"(.*)\"\s*$',transcription)
+    #     if m2 != None : #Transcription with double quotes, we extract the value and replace escaped characters
+    #         transcription = m2.group(1).replace("\\\\", "\\").replace("\\\"", "\"")
     
     return points,confidence,transcription
     
@@ -319,17 +322,19 @@ def validate_clockwise_points(points):
     # summatory = edge[0] + edge[1] + edge[2] + edge[3];
     # if summatory>0:
     #     raise Exception("Points are not clockwise. The coordinates of bounding quadrilaterals have to be given in clockwise order. Regarding the correct interpretation of 'clockwise' remember that the image coordinate system used is the standard one, with the image origin at the upper left, the X axis extending to the right and Y axis extending downwards.")
-    pts = [(points[j], points[j+1]) for j in range(0,len(points),2)]
+    #pts = [(points[j], points[j+1]) for j in range(0,len(points),2)]
+    pts = points
     try:
-        pdet = Polygon(pts)
+        # pdet = Polygon(pts)
+        pdet = box(pts[0],pts[1],pts[2],pts[3],ccw=False)
     except:
         assert(0), ('not a valid polygon', pts)
     # The polygon should be valid.
-    if not pdet.is_valid: 
-        assert(0), ('polygon has intersection sides', pts)
-    pRing = LinearRing(pts)
-    if pRing.is_ccw:
-        assert(0),  ("Points are not clockwise. The coordinates of bounding quadrilaterals have to be given in clockwise order. Regarding the correct interpretation of 'clockwise' remember that the image coordinate system used is the standard one, with the image origin at the upper left, the X axis extending to the right and Y axis extending downwards.")
+    # if not pdet.is_valid: 
+    #     assert(0), ('polygon has intersection sides', pts)
+    # pRing = LinearRing(pts)
+    # if pRing.is_ccw:
+        # assert(0),  ("Points are not clockwise. The coordinates of bounding quadrilaterals have to be given in clockwise order. Regarding the correct interpretation of 'clockwise' remember that the image coordinate system used is the standard one, with the image origin at the upper left, the X axis extending to the right and Y axis extending downwards.")
         
 def get_tl_line_values_from_file_contents(content,CRLF=True,LTRB=True,withTranscription=False,withConfidence=False,imWidth=0,imHeight=0,sort_by_confidences=True):
     """
@@ -404,7 +409,6 @@ def main_evaluation(p,det_file, gt_file, default_evaluation_params_fn,validate_d
     p = {}
     p['g'] =gt_file  #'tttgt.zip'
     p['s'] =det_file #'det.zip'
-
     evalParams = default_evaluation_params_fn()
     if 'p' in p.keys():
         evalParams.update( p['p'] if isinstance(p['p'], dict) else json.loads(p['p'][1:-1]) )
