@@ -126,7 +126,8 @@ class TextEvaluator(DatasetEvaluator):
                         f2.writelines(outstr)
                 f2.close()
         dirn = temp_dir
-        cf_th = 0.45
+        cf_th = 0.5
+        print(cf_th)
         lsc = [cf_th] 
         fres = open('temp_all_det_cors.txt', 'r').readlines()
         

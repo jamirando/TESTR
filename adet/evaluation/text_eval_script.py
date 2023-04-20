@@ -253,6 +253,7 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
     numGlobalCareDet = 0;
     det_only_numGlobalCareGt = 0;
     det_only_numGlobalCareDet = 0;
+    det_only_numGlobalDontCareDet = 0;
    
     arrGlobalConfidences = [];
     arrGlobalMatches = [];
@@ -317,7 +318,6 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
                 gtDontCarePolsNum.append( len(gtPols)-1 ) 
             if det_only_dontCare:
                 det_only_gtDontCarePolsNum.append( len(gtPols)-1 ) 
-
         
         if resFile in subm:
             
@@ -374,7 +374,6 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
                         pG = gtPols[gtNum]
                         pD = detPols[detNum]
                         iouMat[gtNum,detNum] = get_intersection_over_union(pD,pG)
-                
                 for gtNum in range(len(gtPols)):
                     for detNum in range(len(detPols)):
                         if gtRectMat[gtNum] == 0 and detRectMat[detNum] == 0 and gtNum not in gtDontCarePolsNum and detNum not in detDontCarePolsNum :
@@ -439,6 +438,7 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
         numGlobalCareDet += numDetCare
         det_only_numGlobalCareGt += det_only_numGtCare
         det_only_numGlobalCareDet += det_only_numDetCare
+        det_only_numGlobalDontCareDet += len(det_only_detDontCarePolsNum)
 
         perSampleMetrics[resFile] = {
                                         'precision':precision,
@@ -463,6 +463,8 @@ def evaluate_method(gtFilePath, submFilePath, evaluationParams):
     det_only_methodPrecision = 0 if det_only_numGlobalCareDet == 0 else float(det_only_matchedSum)/det_only_numGlobalCareDet
     det_only_methodHmean = 0 if det_only_methodRecall + det_only_methodPrecision==0 else 2* det_only_methodRecall * det_only_methodPrecision / (det_only_methodRecall + det_only_methodPrecision)
 
+    print("care:", det_only_numGlobalCareDet)
+    print("dontcare", det_only_numGlobalDontCareDet)
     
     methodMetrics = r"E2E_RESULTS: precision: {}, recall: {}, hmean: {}".format(methodPrecision, methodRecall, methodHmean)
     det_only_methodMetrics = r"DETECTION_ONLY_RESULTS: precision: {}, recall: {}, hmean: {}".format(det_only_methodPrecision, det_only_methodRecall, det_only_methodHmean)
